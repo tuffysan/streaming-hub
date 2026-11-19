@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() => runApp(const StreamingHub());
 
@@ -70,10 +70,19 @@ class _HomePageState extends State<HomePage> {
     setState(() => services.add(Service(name.text.trim(), uri.toString(), Icons.play_circle)));
   }
   Future<void> _open(Service service) async {
-    await Clipboard.setData(ClipboardData(text: service.url));
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text('${service.name}: adress kopierad. Inbyggd uppspelning kommer i nästa version.')));
+    final uri = Uri.parse(service.url);
+    try {
+      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!launched && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Kunde inte öppna ${service.name}.')));
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ingen app eller webbläsare kunde öppna ${service.name}.')));
+      }
+    }
   }
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -84,7 +93,7 @@ class _HomePageState extends State<HomePage> {
       crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text('Dina streamingtjänster', style: Theme.of(context).textTheme.headlineMedium),
         const SizedBox(height: 8),
-        const Text('Första prototypen: tjänstekatalog. Videouppspelning och reklamfilter är ännu inte implementerade.'),
+        const Text('Välj en tjänst för att öppna den i webbläsaren eller dess app. Inbyggd uppspelning och reklamfilter återstår.'),
         const SizedBox(height: 24),
         Expanded(child: GridView.builder(
           gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
