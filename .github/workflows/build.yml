@@ -17,6 +17,19 @@ jobs:
       - run: flutter pub get
       - run: flutter analyze
       - run: flutter test
+      - name: Enable Android TV launcher and remote support
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('android/app/src/main/AndroidManifest.xml')
+          s = p.read_text(encoding='utf-8')
+          s = s.replace('<application', '<uses-feature android:name="android.hardware.touchscreen" android:required="false" />\n    <application', 1)
+          s = s.replace('<category android:name="android.intent.category.LAUNCHER"/>', '<category android:name="android.intent.category.LAUNCHER"/>\n                <category android:name="android.intent.category.LEANBACK_LAUNCHER"/>')
+          s = s.replace('<category android:name="android.intent.category.LAUNCHER" />', '<category android:name="android.intent.category.LAUNCHER" />\n                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />')
+          p.write_text(s, encoding='utf-8')
+          assert 'LEANBACK_LAUNCHER' in s, 'Android TV launcher intent not added'
+          PY
       - run: flutter build apk --release
       - uses: actions/upload-artifact@v4
         with:
@@ -34,6 +47,21 @@ jobs:
       - run: flutter analyze
       - run: flutter test
       - run: flutter build windows --release
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --yes --no-progress
+      - name: Build Windows installer
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { throw "Inno Setup compiler not found: $iscc" }
+          & $iscc "installer\StreamingHub.iss"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: StreamingHub-Windows-Setup
+          path: installer/output/StreamingHub-Setup.exe
+          if-no-files-found: error
       - uses: actions/upload-artifact@v4
         with:
           name: StreamingHub-Windows-Portable
