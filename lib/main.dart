@@ -39,11 +39,11 @@ class _HomePageState extends State<HomePage> {
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
     final saved = prefs.getStringList('custom_services') ?? [];
-    if (!mounted) return;
+    if (!mounted) { return; }
     setState(() {
       for (final entry in saved) {
         final parts = entry.split('|');
-        if (parts.length == 2) services.add(Service(parts[0], parts[1], Icons.play_circle));
+        if (parts.length == 2) { services.add(Service(parts[0], parts[1], Icons.play_circle)); }
       }
     });
   }
@@ -62,7 +62,7 @@ class _HomePageState extends State<HomePage> {
     ));
     final uri = Uri.tryParse(url.text.trim());
     if (accepted != true || name.text.trim().isEmpty || uri == null ||
-        uri.scheme != 'https' || uri.host.isEmpty) return;
+        uri.scheme != 'https' || uri.host.isEmpty) { return; }
     final prefs = await SharedPreferences.getInstance();
     final items = prefs.getStringList('custom_services') ?? [];
     items.add('${name.text.trim()}|${uri.toString()}');
