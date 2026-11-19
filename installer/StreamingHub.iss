@@ -1,6 +1,9 @@
 #define MyAppName "Streaming Hub"
 #define MyAppVersion "0.2.0"
 #define MyAppExeName "streaming_hub.exe"
+#ifndef BuildOutputDir
+  #define BuildOutputDir "..\\build\\windows\\x64\\runner\\Release"
+#endif
 
 [Setup]
 AppId={{B38F6D15-AF0E-4C57-BD78-6280D982A67E}
@@ -19,7 +22,7 @@ ArchitecturesInstallIn64BitMode=x64compatible
 UninstallDisplayIcon={app}\{#MyAppExeName}
 
 [Files]
-Source: "..\build\windows\x64\runner\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#BuildOutputDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{autoprograms}\Streaming Hub"; Filename: "{app}\{#MyAppExeName}"
