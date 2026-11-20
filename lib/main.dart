@@ -1,3 +1,4 @@
+import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -70,6 +71,11 @@ class _HomePageState extends State<HomePage> {
     setState(() => services.add(Service(name.text.trim(), uri.toString(), Icons.play_circle)));
   }
   Future<void> _open(Service service) async {
+    if (Platform.isAndroid) {
+      await Navigator.of(context).push(MaterialPageRoute<void>(
+        builder: (_) => FilteredBrowser(service: service)));
+      return;
+    }
     final uri = Uri.parse(service.url);
     try {
       final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -93,7 +99,7 @@ class _HomePageState extends State<HomePage> {
       crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text('Dina streamingtjänster', style: Theme.of(context).textTheme.headlineMedium),
         const SizedBox(height: 8),
-        const Text('Välj en tjänst för att öppna den i webbläsaren eller dess app. Inbyggd uppspelning och reklamfilter återstår.'),
+        const Text('På Android öppnas en inbyggd webbläsare med grundläggande reklamfilter. DRM och vissa videoannonser kan fortfarande visas.'),
         const SizedBox(height: 24),
         Expanded(child: GridView.builder(
           gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
